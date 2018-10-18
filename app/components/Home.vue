@@ -1,51 +1,37 @@
 <template>
-    <!--e-->
     <Page class="page">
         <ActionBar title="Home Page" class="action-bar"/>
-        <TabView height="100%" selectedTabColor="#53ba82" tabTextFontSize="15">
-            <TabViewItem title="Search Food" textTransform="uppercase">
+        <!--<TabView height="100%" selectedTabColor="#53ba82" tabTextFontSize="15">-->
+            <!--<TabViewItem title="Search Food" textTransform="uppercase">-->
         <ScrollView>
             <StackLayout>
-                <SearchBar hint="Search hint" :text="searchPhrase" />
-                <Button col="0" row="0" text="Find Info" @tap="onButtonTap"/>
-                <CardView class="cardStyle" margin="10" elevation="40" radius="5">
-                <!--<GridLayout columns="auto, auto, *" rows="200, auto, auto">-->
-                <!--</GridLayout>-->
-                    <ListView class="list-group" for="item in items">
-                        <v-template>
-
-                            <Label v-model="item" class="list-group-item-text"/>
-                        </v-template>
-                    </ListView>
-
-                    <!--<Label col="0" row="2" @tap="changeRoute"/>-->
-
-                </CardView>
+                <SearchBar hint="red lentils" v-model="searchText" @submit="onSearchFoodTap"/>
+                <ListView class="list-group" for="item in items">
+                    <v-template>
+                        <Label id="active task" :text="item.name" height="70"/>
+                        <!--<Label id="active task" :text="item.serving" height="70"/>-->
+                        <!--<Label id="active task" :text="item.photo" height="70"/>-->
+                        <!--<Label id="active task" :text="item.tagID" height="70"/>-->
+                    </v-template>
+                </ListView>
             </StackLayout>
-
-            <!--<ListView for="item in items" class="list-group" @itemTap="onItemTap">-->
-
-                <!--<v-template>-->
-                    <!--<GridLayout class="list-group-item" rows="90" columns="auto, *">-->
-                        <!--<Image row="0" col="0" :src="item.src" class="thumb img-circle"/>-->
-                        <!--<Label row="0" col="1" :text="item.text"/>-->
-                    <!--</GridLayout>-->
-                <!--</v-template>-->
-            <!--</ListView>-->
         </ScrollView>
-            </TabViewItem>
-            <TabViewItem title="Search Nutrient" textTransform="uppercase">
+            <!--</TabViewItem>-->
 
-            </TabViewItem>
-        </TabView>
+
+        <!--</TabView>-->
     </Page>
 </template>
 
 <script>
+    import axios from 'axios';
 export default {
     data() {
         return {
-            items: []
+            items: [],
+            searchText: '',
+            appID: "c32545ce",
+            appKey: "d64606d7a3456c19baee2bd107dca747"
         };
     },
     methods: {
@@ -63,30 +49,69 @@ export default {
                 }
             );
         },
+        onSearchFoodTap() {
+            const httpModule = require("http");
+            axios.get("https://trackapi.nutritionix.com/v2/search/instant?query="+this.searchText, {
+                headers: {
+                    "x-app-id": this.appID,
+                    "x-app-key": this.appKey
+                }
+            }).then((result) => {
+                console.log("testing get request with axios");
+                //console.log(result.data.common);
+                for(const food of result.data.common) {
+                    console.log("hey");
+                    console.log(food);
+                    console.log("yo");
+                    console.log(food.food_name);
+                    console.log(food.serving_qty);
+                    console.log(food.serving_unit);
+                    console.log(food.photo.thumb);
+                    console.log(food.tag_id);
+                    this.items.push({
+                        name: food.food_name,
+                        serving: food.serving_qty + food.serving_unit,
+                        photo: food.photo.thumb,
+                        tagID: food.tag_id,
+                    });
+
+                }
+            }, error => {
+                console.error(error);
+            });
+            // let request = httpModule.getJSON("https://trackapi.nutritionix.com/v2/search/instant?query="+
+            //     this.searchText+"?x-app-id=" + this.appID + "&x-app-key="+ this.appKey).then((r) => {
+            //         console.log("testing nutritionix api get request");
+            //         console.log(r);
+            // });
+        },
+        onSearchNutrientTap() {
+            return null;
+        },
         extractJSON(data) {
-            let foodName;
-            let;
             if(data.hasOwnProperty('foods')) {
                 console.log('hey hey seth here');
                 for(const entry of data.foods) {
                     if(entry.hasOwnProperty('food')) {
                         console.log(entry.food.desc.name);
-                        //console.log('1');
                         this.items.push(entry.food.desc.name);
-                        // console.log(food.desc.name);
                     }
-                    //console.log('2');
-                    // console.log("Print statement of food: " + food);
-                    // this.items.push(food);
                 }
             }
-           // console.log(this.items);
         }
     }
 }
 </script>
 
 <style>
+    #active-task {
+        font-size: 20;
+        font-weight: bold;
+        color: #53ba82;
+        margin-left: 20;
+        padding-top: 10;
+        padding-bottom: 15;
+    }
     /*.list-group-item {*/
         /*margin-top: 30;*/
         /*margin-bottom: 30;*/
